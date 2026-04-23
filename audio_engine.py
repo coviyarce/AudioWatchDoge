@@ -112,6 +112,13 @@ class AudioWatchDogeEngine:
             {"name": "Windows Proxy (TCP:9001)", "is_loopback": True, "label": "SYSTEM"}
         ]
 
+    def push_audio(self, label, data):
+        """Inject raw float32 audio data directly into the buffer (e.g. from WebSockets)."""
+        with self.lock:
+            if label not in self.buffer:
+                self.buffer[label] = deque(maxlen=16000 * 5)
+            self.buffer[label].extend(data)
+
     def set_device(self, label, device_name):
         return True
 

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from audio_engine import AudioWatchDogeEngine
 import asyncio
+import numpy as np
 
 app = FastAPI()
 
@@ -79,6 +80,19 @@ async def start_engine():
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+@app.websocket("/audio-stream/{label}")
+async def audio_stream_endpoint(websocket: WebSocket, label: str):
+    await websocket.accept()
+    print(f"Browser: Audio stream started for [{label}]")
+    try:
+        while True:
+            # Receive binary frame (float32 PCM)
+            data = await websocket.receive_bytes()
+            audio_data = np.frombuffer(data, dtype=np.float32)
+            engine.push_audio(label, audio_data)
+    except Exception as e:
+        print(f"Browser: Audio stream [{label}] stopped: {e}")
 
 @app.on_event("startup")
 async def startup_event():
