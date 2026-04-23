@@ -94,6 +94,11 @@ async def audio_stream_endpoint(websocket: WebSocket, label: str):
     except Exception as e:
         print(f"Browser: Audio stream [{label}] stopped: {e}")
 
+@app.post("/update-subjects")
+async def update_subjects(data: dict):
+    engine.update_subjects(data['subjects'])
+    return {"success": True}
+
 @app.on_event("startup")
 async def startup_event():
     engine.start()
