@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+websockets
+pyaudio
+faster-whisper
+numpy
+soundcard
+python-multipart
