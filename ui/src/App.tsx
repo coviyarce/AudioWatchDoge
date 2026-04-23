@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Container, Typography, Box, Paper, LinearProgress, 
-  Grid, Card, CardContent, Chip, Stack, Select, MenuItem, FormControl, InputLabel
+  Grid, Card, CardContent, Chip, Stack, Select, MenuItem, FormControl, InputLabel,
+  Button
 } from '@mui/material';
-import { Mic, Speaker, History } from '@mui/icons-material';
+import { Mic, Speaker, History, PlayArrow } from '@mui/icons-material';
 
 interface Device {
   name: string;
@@ -56,10 +57,15 @@ function App() {
     }
   }, [transcripts]);
 
+  const handleStartEngine = () => {
+    fetch('http://localhost:8000/start-engine', { method: 'POST' })
+      .then(res => res.json())
+      .then(data => console.log("Engine start triggered", data));
+  };
+
   const handleDeviceChange = (label: string, deviceName: string) => {
     if (label === 'MIC') setSelectedMic(deviceName);
     else setSelectedSystem(deviceName);
-
     fetch('http://localhost:8000/select-device', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -70,9 +76,20 @@ function App() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#121212', py: 5, color: '#fff' }}>
       <Container maxWidth="lg">
-        <Typography variant="h4" align="center" sx={{ fontWeight: 'bold', mb: 4 }}>
-          🐶 AudioWatchDoge Live Studio
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            🐶 AudioWatchDoge Studio
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="success" 
+            startIcon={<PlayArrow />}
+            onClick={handleStartEngine}
+            sx={{ fontWeight: 'bold' }}
+          >
+            START AUDIO ENGINE
+          </Button>
+        </Box>
         
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 4 }}>
@@ -106,13 +123,9 @@ function App() {
               </Box>
               <CardContent sx={{ flexGrow: 1, overflowY: 'auto', bgcolor: '#000', p: 0 }} ref={scrollRef}>
                 <Box sx={{ p: 2 }}>
-                  {transcripts.length === 0 && (
-                    <Typography sx={{ color: '#444', fontStyle: 'italic' }}>Waiting for audio signal...</Typography>
-                  )}
                   {transcripts.map((t, i) => (
                     <Typography key={i} sx={{ 
-                      fontFamily: 'monospace', 
-                      mb: 1, 
+                      fontFamily: 'monospace', mb: 1, 
                       color: t.includes('[MIC]') ? '#00ff00' : '#00ccff',
                       fontSize: '0.9rem'
                     }}>
@@ -142,7 +155,7 @@ const DeviceCard = ({ title, label, level, icon, devices, selectedValue, onSelec
         <Select
           value={selectedValue}
           label="Source"
-          onChange={(e) => onSelect(e.target.value)}
+          onChange={(e) => onSelect(e.target.value as string)}
           sx={{ color: '#fff', bgcolor: '#222', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#444' } }}
         >
           {devices.map((d: Device) => (
@@ -155,14 +168,7 @@ const DeviceCard = ({ title, label, level, icon, devices, selectedValue, onSelec
         <LinearProgress 
           variant="determinate" 
           value={level} 
-          sx={{ 
-            height: 10, 
-            borderRadius: 5, 
-            bgcolor: '#333',
-            '& .MuiLinearProgress-bar': {
-               bgcolor: level > 80 ? '#f44336' : '#4caf50'
-            }
-          }} 
+          sx={{ height: 10, borderRadius: 5, bgcolor: '#333', '& .MuiLinearProgress-bar': { bgcolor: level > 80 ? '#f44336' : '#4caf50' } }} 
         />
       </Box>
       <Typography variant="caption" align="right" sx={{ display: 'block', color: '#888' }}>{level}%</Typography>

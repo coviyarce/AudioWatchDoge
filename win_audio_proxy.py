@@ -1,22 +1,24 @@
 import soundcard as sc
 import socket
 import numpy as np
+import sys
+import argparse
 
 # CONFIG
 WSL_IP = "127.0.0.1"
 PORT = 9000
 SAMPLE_RATE = 16000
 
-def start_proxy():
+def start_proxy(device_index=None):
     print(f"🐶 DogeProxy: Initializing Windows Audio Capture...")
     mics = sc.all_microphones(include_loopback=True)
     
-    for i, m in enumerate(mics):
-        print(f"[{i}] {m.name}")
+    if device_index is None:
+        for i, m in enumerate(mics):
+            print(f"[{i}] {m.name}")
+        device_index = int(input("\nSelect Input Device Index: "))
     
-    idx = int(input("\nSelect Input Device Index: "))
-    mic = mics[idx]
-    
+    mic = mics[device_index]
     print(f"🐶 DogeProxy: Streaming {mic.name} to WSL:{PORT}...")
     
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -24,18 +26,15 @@ def start_proxy():
             s.connect((WSL_IP, PORT))
             with mic.recorder(samplerate=SAMPLE_RATE) as recorder:
                 while True:
-                    data = recorder.record(numframes=1600) # 100ms
+                    data = recorder.record(numframes=1600)
                     if len(data.shape) > 1:
                         data = data.mean(axis=1)
-                    
-                    # Debug: Check if we actually have signal
-                    peak = np.abs(data).max()
-                    if peak > 0.01: # Only print if there's actual sound
-                        print(f"Signal: {peak:.4f}", end="\r")
-                    
                     s.sendall(data.astype('float32').tobytes())
         except Exception as e:
             print(f"\nDogeProxy Error: {e}")
 
 if __name__ == "__main__":
-    start_proxy()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--index", type=int, help="Device index")
+    args = parser.parse_args()
+    start_proxy(args.index)

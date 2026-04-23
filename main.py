@@ -59,6 +59,27 @@ async def select_device(data: dict):
     success = engine.set_device(data['label'], data['device_name'])
     return {"success": success}
 
+import subprocess
+
+@app.post("/start-engine")
+async def start_engine():
+    try:
+        proxy_mic = r"D:\IA - Proyectos\git\AudioWatchDoge\win_audio_proxy.py"
+        proxy_sys = r"D:\IA - Proyectos\git\AudioWatchDoge\win_system_proxy.py"
+        
+        # Command for Mic
+        cmd_mic = f'cmd.exe /c start "" python "{proxy_mic}"'
+        # Command for System with /k to keep window open on error
+        cmd_sys = f'cmd.exe /c start "" cmd /k python "{proxy_sys}"'
+        
+        subprocess.Popen(cmd_mic, shell=True)
+        import time
+        time.sleep(1) # Small delay to prevent CMD collisions
+        subprocess.Popen(cmd_sys, shell=True)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 @app.on_event("startup")
 async def startup_event():
     engine.start()
