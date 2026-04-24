@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="varda.png" width="400" alt="Varda - AudioWatchDoge Mascot">
+  <img src="varda.jpeg" width="400" alt="Varda - AudioWatchDoge Mascot">
 </p>
 
 # 🐶 AudioWatchDoge Studio v5.0
