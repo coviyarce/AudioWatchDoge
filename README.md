@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="varda.png" width="400" alt="Varda - AudioWatchDoge Mascot">
+</p>
+
 # 🐶 AudioWatchDoge Studio v5.0
 
 A universal, cross-platform audio intelligence studio for high-fidelity transcription, live signal monitoring, and contextual subject filtering. Rebuilt with a factorized Clean Architecture following the GodeMode "Places" pattern.
