@@ -1,25 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-
-/**
- * @typedef Highlight
- * @property {string} label - MIC or SYSTEM
- * @property {string} context - Sliding window context
- * @property {string} verbatim - Specific matched text
- * @property {string} timestamp - Occurence time
- */
-export interface Highlight {
-  label: string;
-  context: string;
-  verbatim: string;
-  timestamp: string;
-}
+import { AudioApi } from '../api/AudioApi';
+import { Highlight } from '../types';
 
 /**
  * @hook useAudioEngine
- * @description The 'JS' place. Manages the AudioWatchDoge processing lifecycle.
- * Handles WebSockets for levels/transcripts/highlights and Web Audio API for capture.
- * 
- * NEXT DEVELOPER: Implement reconnect logic with exponential backoff if WS fails.
+ * @description Logic Place. Manages state, data streams, and intelligence packs.
  */
 export function useAudioEngine() {
   const [levels, setLevels] = useState<Record<string, number>>({ MIC: 0, SYSTEM: 0 });
@@ -27,6 +12,8 @@ export function useAudioEngine() {
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [isMicRecording, setIsMicRecording] = useState(false);
   const [isSystemRecording, setIsSystemRecording] = useState(false);
+  const [packs, setPacks] = useState<string[]>([]);
+  const [selectedPack, setSelectedPack] = useState<string | null>(null);
   
   const micContextRef = useRef<AudioContext | null>(null);
   const systemContextRef = useRef<AudioContext | null>(null);
@@ -34,7 +21,15 @@ export function useAudioEngine() {
   const systemWsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    /** @function initMainSocket - Listens for level and highlight updates from the engine. */
+    // 1. Fetch available packs
+    AudioApi.fetchPacks()
+      .then(data => setPacks(Array.isArray(data) ? data : []))
+      .catch(e => {
+        console.error("API Offline");
+        setPacks([]);
+      });
+
+    // 2. Init Main Socket
     const ws = new WebSocket('ws://localhost:8000/ws');
     ws.onmessage = (event: MessageEvent) => {
       const msg = event.data;
@@ -58,12 +53,11 @@ export function useAudioEngine() {
     return () => ws.close();
   }, []);
 
-  /**
-   * @function setupAudioStream
-   * @description Initializes Browser-Native capture (Mic or System Audio).
-   * @param {string} label - The source identifier (MIC/SYSTEM).
-   * @param {boolean} isSystem - Whether to use Display Media API for system sound.
-   */
+  const selectPack = async (packId: string) => {
+    await AudioApi.selectPack(packId);
+    setSelectedPack(packId);
+  };
+
   const setupAudioStream = async (label: string, isSystem: boolean) => {
     try {
       const stream = isSystem 
@@ -100,7 +94,6 @@ export function useAudioEngine() {
     }
   };
 
-  /** @function stopStream - Cleanup function to close context and sockets. */
   const stopStream = (label: string) => {
     if (label === 'MIC') {
       micContextRef.current?.close(); micWsRef.current?.close(); setIsMicRecording(false);
@@ -109,12 +102,11 @@ export function useAudioEngine() {
     }
   };
 
-  /** @function startProxies - Triggers the backend to spawn local Windows Python proxies. */
-  const startProxies = () => fetch('http://localhost:8000/start-engine', { method: 'POST' });
-
   return {
     levels, transcripts, highlights,
     isMicRecording, isSystemRecording,
-    setupAudioStream, stopStream, startProxies
+    packs, selectedPack, selectPack,
+    setupAudioStream, stopStream, 
+    startProxies: AudioApi.startProxies
   };
 }

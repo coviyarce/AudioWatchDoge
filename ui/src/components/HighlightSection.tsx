@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Card, Box, Typography, Chip } from '@mui/material';
 import { FilterAlt } from '@mui/icons-material';
 import { studioStyles } from '../styles/StudioStyles';
-import { Highlight } from '../hooks/useAudioEngine';
+import { Highlight } from '../types';
 
 interface HighlightSectionProps {
   highlights: Highlight[];

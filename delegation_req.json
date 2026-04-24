@@ -1,0 +1,7 @@
+{
+  "model": "gemma-4",
+  "messages": [
+    {"role": "system", "content": "You are a Senior Python Developer specializing in Audio processing. Use 'soundcard' for system loopback and 'faster-whisper' for STT."},
+    {"role": "user", "content": "Write a Python class 'AudioEngine' that captures both system output and mic input. Use separate threads or async tasks. Transcribe chunks and return text via a callback or generator. Return code only."}
+  ]
+}

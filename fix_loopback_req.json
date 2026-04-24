@@ -1,0 +1,7 @@
+{
+  "model": "hermes",
+  "messages": [
+    {"role": "system", "content": "You are a Senior Python Developer. Specialist in 'soundcard' and 'faster-whisper'."},
+    {"role": "user", "content": "The code `sc.default_speaker().recorder()` fails with `AttributeError: '_Speaker' object has no attribute 'recorder'`. On Windows, how do I capture system output (loopback) and mic input simultaneously using 'soundcard'? Correct the 'AudioWatchDogeEngine' class to handle loopback correctly. Use 'sc.all_microphones(include_loopback=True)' to find the right device. Return the full corrected class only."}
+  ]
+}

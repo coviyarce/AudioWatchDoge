@@ -5,7 +5,10 @@ import asyncio
 import threading
 import sys
 from collections import deque
-from filter_logic import RangeFilter
+try:
+    from filter_logic import RangeFilter
+except ImportError:
+    from .filter_logic import RangeFilter
 
 class AudioWatchDogeEngine:
     def __init__(self, model_size="tiny"):
