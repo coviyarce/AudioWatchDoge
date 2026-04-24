@@ -1,54 +1,80 @@
-# 🐶 AudioWatchDoge Studio v4.0
+# 🐶 AudioWatchDoge Studio v5.0
 
-A universal, cross-platform audio intelligence studio for high-fidelity transcription, live signal monitoring, and contextual subject filtering. Built for the GodeMode AI Software Factory.
+A universal, cross-platform audio intelligence studio for high-fidelity transcription, live signal monitoring, and contextual subject filtering. Rebuilt with a factorized Clean Architecture following the GodeMode "Places" pattern.
 
 ## 🚀 Overview
-AudioWatchDoge transforms raw audio into actionable intelligence. It leverages **Faster-Whisper** for real-time transcription and a custom **RangeFilter** engine to identify specific subjects and phrases within a sliding 10-second contextual window.
+AudioWatchDoge transforms raw audio into actionable intelligence. It leverages **Faster-Whisper** for real-time transcription and a multi-threaded engine to identify specific subjects and phrases within a sliding 10-second contextual window.
 
 ### Key Capabilities:
-- **Universal Capture**: Works via Browser-Native APIs or Local Windows Proxies.
-- **Contextual Highlights**: Automatically flags keywords/phrases and presents the surrounding context.
-- **Multi-Threaded Engine**: Isolated threads for ingestion, metering, and transcription.
+- **Universal Capture**: Seamless switching between Browser-Native APIs (Web Audio / Display Media) and OS-Native High-Fidelity Proxies.
+- **Contextual Highlights**: Intelligent keyword/phrase detection with automatic surrounding context retrieval.
+- **Intelligence Domains**: Swappable "Subject Packs" (UX/UI, Architect, General) to tailor the engine to your current task.
+- **Material Design 2**: A premium "Soft Dark" interface strictly following M2 specifications for low eye fatigue.
 
 ---
 
-## ⚙️ Configuration (Customization)
+## 🛠 Project Architecture
 
-The Studio is designed to be personalized. You can modify the environment to suit your needs:
+The project is structured into modular domains for maximum maintainability:
 
-### 1. Server Port
-- **Backend**: In `main.py`, modify the `uvicorn.run` call at the bottom. Default is `8000`.
-- **Frontend**: If you change the backend port, update the URLs in `ui/src/hooks/useAudioEngine.ts` and `ui/src/App.tsx`.
-- **UI Port**: By default, the React app runs on `3001` (set in `ui/.env`).
+### **📡 Backend (`backend/`)**
+- **`api/server.py`**: FastAPI entry point. Orchestrates binary WebSockets and REST services.
+- **`api/subject_packs.py`**: Curated intelligence dictionaries for different professional domains.
+- **`engine/engine_core.py`**: The "Heart". Multi-threaded processor managing audio buffers and Whisper AI.
+- **`engine/filter_logic.py`**: The "Brain". Implements fuzzy matching and contextual sliding windows.
 
-### 2. Reserved Words (Subjects)
-You can customize which words trigger the **Contextual Highlights**:
-- **Option A (Static)**: Modify the list in `filter_logic.py` inside the `RangeFilter.__init__` method.
-- **Option B (Dynamic)**: Use the API to update words in real-time:
-  ```bash
-  curl -X POST http://localhost:8000/update-subjects -H "Content-Type: application/json" -d '{"subjects": ["new", "keywords", "here"]}'
-  ```
+### **🖥️ Hardware (`hardware/`)**
+- **`win_audio_proxy.py`**: Windows-native Mic capture (TCP Port 9000).
+- **`win_system_proxy.py`**: Windows-native Desktop audio capture (TCP Port 9001).
+
+### **🎨 Frontend (`ui/`)**
+- **The JS Place (`ui/src/hooks/`, `ui/src/api/`)**: Pure logic, state management, and API services.
+- **The HTML Place (`ui/src/components/`, `ui/src/App.tsx`)**: Modular view components and layout shell.
+- **The CSS Place (`ui/src/styles/StudioStyles.ts`)**: Centralized MUI styling manifest following Material Design 2.
+
+---
+
+## ⚡ Setup Guide
+
+### 1. Backend (WSL2 / Linux)
+Requires Python 3.12+ and FFmpeg.
+```bash
+# Install dependencies
+pip install fastapi uvicorn faster-whisper numpy soundcard
+
+# Run the studio server
+python3 backend/api/server.py
+```
+
+### 2. Frontend (Windows / Mac / Linux)
+Requires Node.js 18+.
+```bash
+cd ui
+npm install
+npm start
+```
 
 ---
 
 ## 🎙 Usage Guide
 
-### Option A: Browser-Native (Instant)
-1. Open `http://localhost:3001`.
-2. Click **MIC** to start recording from your browser microphone.
-3. Click **SYSTEM AUDIO** to capture desktop sound (ensure you check "Share system audio" in the popup).
+### 1. Initialize Studio
+Upon launch, choose an **Intelligence Domain** (e.g., UX/UI Designer). This loads specific keyword cloud into the GPU filter.
 
-### Option B: Proxy Mode (Power User)
-1. Click **PROXIES** in the UI to spawn local Windows terminals.
-2. Useful for OS-level routing or bypassing browser privacy locks.
+### 2. Capture Audio
+- **MIC**: Instant browser-based microphone recording.
+- **SYSTEM AUDIO**: Browser-based desktop capture (requires "Share system audio" check).
+- **PROXIES**: Spawns local Windows terminals for deep OS-level audio routing.
+
+### 3. Contextual Insights
+The engine watches for phrases in your chosen pack. When a match occurs, the **Highlights** area presents the verbatim match along with the preceding 10 seconds of context.
 
 ---
 
-## 🛠 Architecture (The 'Places' Pattern)
-
-- **The JS Place (`ui/src/hooks/useAudioEngine.ts`)**: Pure logic and state.
-- **The CSS Place (`ui/src/styles/StudioStyles.ts`)**: MUI styling manifest.
-- **The HTML Place (`ui/src/App.tsx`)**: Modular layout structure.
+## 📜 Developer Notes
+- **Fuzzy Thresholds**: Short terms (UX/UI) use 0.7 sensitivity; long terms use 0.85.
+- **Elevation Overlay**: Surface colors in `StudioStyles.ts` follow the M2 1dp-4dp grey hierarchy.
+- **Meters**: Logarithmic dB scaling ensures visual feedback even for subtle sounds.
 
 ---
 *Created with ❤️ by the GodeMode AI Software Factory.*
